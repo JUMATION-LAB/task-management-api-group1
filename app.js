@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 const express = require('express');
-const { title } = require('node:process');
+
 const app = express();
 // Importing the port from .env
 const PORT = process.env.PORT || 3000;
@@ -30,23 +30,61 @@ let tasks =[
     },
     
     {
-         id:4,
+        id:4,
         title: 'Learn Laravel',
         description:'Learn PHP framework laravel to bulid backend application',
         status:'Pending'
     },
 
+];
+
 
 //Middleware to parse the request body
 
 app.use(express.json())
-]
 
 
 
 app.get('/', (req, res) => {
     res.send('Task Manager API is running successfully.');
 });
+
+app.get("/tasks", (req, res) => {
+    res.status(200).json(tasks);
+});
+
+// Create a new task
+app.post("/tasks", (req, res) => {
+    const {title, description, status = pending} = req.body;
+
+    // Check if an object in the task array is empty
+    if(!title || title.trim() === ""){
+        return res.status(400).json( {error: "Title of the task cannot be empty"} );
+    }
+
+    if(!description || description.trim() === ""){
+        return res.status(400).json( {error: "Description of the task cannot be empty" } );
+    }
+
+    if(!status || status.trim() === ""){
+        return res.status(400).json( {error: "Task status is required"} );
+    }
+
+    // create a new task array
+    const newTask = {
+        id: tasks.length + 1,
+        title,
+        description,
+        status
+    }
+
+    // Add to the new task array
+    tasks.push(newTask);
+
+    // Display the new task array
+    res.status(201).json(newTask);
+});
+
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
