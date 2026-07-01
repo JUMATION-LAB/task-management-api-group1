@@ -57,6 +57,12 @@ app.get("/tasks", (req, res) => {
 app.post("/tasks", (req, res) => {
     const {title, description, status = pending} = req.body;
 
+    // check if task already exist
+    const taskExists = tasks.find(t => t.title === title);
+    if(taskExists) {
+        return res.status(400).send({Error: 'Task already exists' })
+    }
+
     // Check if an object in the task array is empty
     if(!title || title.trim() === ""){
         return res.status(400).json( {error: "Title of the task cannot be empty"} );
