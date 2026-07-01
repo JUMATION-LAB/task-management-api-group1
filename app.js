@@ -38,14 +38,14 @@ let tasks =[
 
 ]
 
-//Middleware to parse the request body
+//Middleware to parse the request body.
 
 app.use(express.json())
-
 
 app.get('/', (req, res) => {
     res.send('Task Manager API is running successfully.');
 });
+
 
 
 //Update a task by id
