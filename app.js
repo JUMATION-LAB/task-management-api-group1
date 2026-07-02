@@ -34,8 +34,7 @@ let tasks =[
         title: 'Learn Laravel',
         description:'Learn PHP framework laravel to bulid backend application',
         status:'Pending'
-    },
-
+ 
 ];
 
 
@@ -44,54 +43,79 @@ let tasks =[
 app.use(express.json())
 
 
+//Middleware to parse the request body.
+
+app.use(express.json())
 
 app.get('/', (req, res) => {
     res.send('Task Manager API is running successfully.');
 });
 
-app.get("/tasks", (req, res) => {
-    res.status(200).json(tasks);
-});
 
-// Create a new task
-app.post("/tasks", (req, res) => {
-    const {title, description, status = pending} = req.body;
 
-    // check if task already exist
-    const taskExists = tasks.find(t => t.title === title);
-    if(taskExists) {
-        return res.status(400).send({Error: 'Task already exists' })
+//Update a task by id
+// This changes the task in the database completely according to the body and id provided.
+app.put('/tasks/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+
+    const { title, description } = req.body;
+
+    //Success index of task is returned or -1 if no task with id is found.
+    const taskIndex = tasks.findIndex(t => t.id === id);
+
+    console.log(tasks);
+    console.log(taskIndex);
+    //The error handler if the task is not found
+    if(taskIndex === -1){ 
+        return res.status(404).send({Error: 'Task not found' })
     }
 
-    // Check if an object in the task array is empty
-    if(!title || title.trim() === ""){
-        return res.status(400).json( {error: "Title of the task cannot be empty"} );
-    }
-
-    if(!description || description.trim() === ""){
-        return res.status(400).json( {error: "Description of the task cannot be empty" } );
-    }
-
-    if(!status || status.trim() === ""){
-        return res.status(400).json( {error: "Task status is required"} );
-    }
-
-    // create a new task array
-    const newTask = {
-        id: tasks.length + 1,
+    //Update the task object
+    tasks[taskIndex] = {
+        id,
         title,
         description,
         status
+    };
+
+    res.json(tasks);
+
+});
+
+
+///Update for only a specific field of a task by id eg a status.
+app.patch('/tasks/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const {  status } = req.body;
+
+    const updateTask = tasks.find( t => t.id === id );
+
+    //If not found, return 404 error
+    if(!updateTask) {
+        return res.status(404).send({Error: 'Task not found' })
     }
 
-    // Add to the new task array
-    tasks.push(newTask);
-
-    // Display the new task array
-    res.status(201).json(newTask);
+    //Update the status of the task 
+    if( status === 'Completed' && updateTask.status === 'Pending') {
+        updateTask.status = 'Completed';
+    } else if (status === 'Pending' && updateTask.status === 'Completed') {
+        updateTask.status = 'Pending';
+    } else if ( (status === 'Pending' && updateTask.status === 'Pending') ||
+        (status === 'Completed' && updateTask.status === 'Completed') ) {
+            return res.status(200).send({Error: 'Status is up to date.' });
+    } else {
+        return res.status(400).send({Error: 'Invalid status update.' });
+    }
+    res.json(updateTask);
+    
 });
+
+
+
 
 // Start the server
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running live at http://localhost:${PORT}`);
 });
+
+
