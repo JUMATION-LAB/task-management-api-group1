@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 const express = require('express');
-const { title } = require('node:process');
+
 const app = express();
 // Importing the port from .env
 const PORT = process.env.PORT || 3000;
@@ -30,13 +30,18 @@ let tasks =[
     },
     
     {
-         id:4,
+        id:4,
         title: 'Learn Laravel',
         description:'Learn PHP framework laravel to bulid backend application',
         status:'Pending'
-    },
+ 
+];
 
-]
+
+//Middleware to parse the request body
+
+app.use(express.json())
+
 
 //Middleware to parse the request body.
 
