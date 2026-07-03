@@ -34,6 +34,7 @@ let tasks =[
         title: 'Learn Laravel',
         description:'Learn PHP framework laravel to bulid backend application',
         status:'Pending'
+    }
  
 ];
 
@@ -44,7 +45,6 @@ app.use(express.json())
 
 
 //Middleware to parse the request body.
-
 app.use(express.json())
 
 app.get('/', (req, res) => {
@@ -52,6 +52,89 @@ app.get('/', (req, res) => {
 });
 
 
+app.get("/tasks", (req, res) => {
+    res.status(200).json(tasks);
+});
+
+// Create a new task
+app.post("/tasks", (req, res) => {
+    const {title, description, status = "Pending"} = req.body;
+
+    // check if task already exist
+    const taskExists = tasks.find(t => t.title === title);
+    if(taskExists) {
+        return res.status(400).send({Error: 'Task already exists' })
+    }
+
+    // Check if an object in the task array is empty
+    if(!title || title.trim() === ""){
+        return res.status(400).json( {error: "Title of the task cannot be empty"} );
+    }
+
+    if(!description || description.trim() === ""){
+        return res.status(400).json( {error: "Description of the task cannot be empty" } );
+    }
+
+    if(!status || status.trim() === ""){
+        return res.status(400).json( {error: "Task status is required"} );
+    }
+
+    // create a new task array
+    const newTask = {
+        id: tasks.length + 1,
+        title,
+        description,
+        status
+    }
+
+    // Add to the new task array
+    tasks.push(newTask);
+
+    // Display the new task array
+    res.status(201).json(newTask);
+});
+
+//Creating task in URL. eg tasks/url?title=Learn%20Node.js&description=Learn%20Node.js%20and%20Express.js%20to%20bulid%20backend%20application&status=Completed
+app.post("/tasks/url", (req, res) => {
+    const title = req.query.title;
+    const description = req.query.description;
+    const status = req.query.status || "Pending";
+    console.log(title);
+
+
+    // check if task already exist
+    const taskExists = tasks.find(t => t.title === title);
+    if(taskExists) {
+        return res.status(400).send({Error: 'Task already exists' })
+    }
+
+    // Check if an object in the task array is empty
+    if(!title || title.trim() === ""){
+        return res.status(400).json( {error: "Title of the task cannot be empty"} );
+    }
+
+    if(!description || description.trim() === ""){
+        return res.status(400).json( {error: "Description of the task cannot be empty" } );
+    }
+
+    if(!status || status.trim() === ""){
+        return res.status(400).json( {error: "Task status is required"} );
+    }
+
+    // create a new task array
+    const newTask = {
+        id: tasks.length + 1,
+        title,
+        description,
+        status
+    }
+
+    // Add to the new task array
+    tasks.push(newTask);
+
+    // Display the new task array
+    res.status(201).json({ "Added url Task" : newTask });
+});
 
 //Update a task by id
 // This changes the task in the database completely according to the body and id provided.
@@ -110,6 +193,23 @@ app.patch('/tasks/:id', (req, res) => {
     
 });
 
+
+//Delete a task by id
+app.delete('/tasks/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+
+    const taskIndex = tasks.findIndex(t => t.id === id);
+
+    //The error handler if the task is not found
+    if(taskIndex === -1) {
+        return res.status(404).send({Error: 'Task not found' })
+    }
+
+    //Remove the task from the tasks array
+    tasks.splice(taskIndex, 1);
+
+    res.status(201).send({ message: `Task ${id} deleted successfully` , tasks: tasks});
+});
 
 
 
